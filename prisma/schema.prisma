@@ -2,7 +2,7 @@
 
 datasource db {
   provider = "mysql" // Change if needed
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:root@localhost:3306/doc_connect"
 }
 
 generator client {
