@@ -9,6 +9,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Add this new generator for seeding
+generator seed {
+  provider = "ts-node"
+  require = ["tsconfig-paths/register"]
+}
+
 /// Enums used in the models
 enum AppointmentStatus {
   pending
@@ -43,7 +49,7 @@ model User {
   role              Role     @map("Role")
   locationLatitude  Decimal? @map("LocationLatitude")
   locationLongitude Decimal? @map("LocationLongitude")
-  bio               String?  @map("Bio")
+  bio               String?  @db.Text @map("Bio")
   meetingPrice      Decimal? @map("MeetingPrice")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -139,7 +145,7 @@ model Doctor {
   phone             String   @unique @map("phone")
   specialty         String   @map("specialty")
   experience        Int      @map("experience")
-  bio               String?  @map("bio")
+  bio               String?  @db.Text @map("bio")
   profilePicture    String?  @map("profilePicture")
   isVerified        Boolean  @default(false) @map("isVerified")
   locationLatitude  Decimal? @map("LocationLatitude")
@@ -172,10 +178,11 @@ model Patient {
   dateOfBirth       DateTime @map("dateOfBirth")
   gender            Gender   @map("gender")
   profilePicture    String?  @map("profilePicture")
-  medicalHistory    String?  @map("medicalHistory")
+  medicalHistory    String?  @db.Text @map("medicalHistory")
   locationLatitude  Decimal? @map("LocationLatitude")
   locationLongitude Decimal? @map("LocationLongitude")
   password          String   @map("Password")
+  bio               String?  @db.Text @map("bio")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
