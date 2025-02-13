@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SignOptions } from 'jsonwebtoken';
 
+
 const prisma = new PrismaClient();
 
 // Make sure to export the function with this exact name
