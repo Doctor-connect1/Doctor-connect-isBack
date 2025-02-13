@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { SignOptions } from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -51,11 +52,21 @@ export async function POST(request: Request) {
       },
     });
 
-    // Generate JWT token
+    // Fix JWT signing
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    const signOptions: SignOptions = {
+      //@ts-ignore
+      expiresIn: process.env.JWT_EXPIRES_IN || '8h'
+    };
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      jwtSecret,
+      signOptions
     );
 
     // Remove password from response
