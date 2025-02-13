@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 
 // Make sure to export the function with this exact name
 export async function POST(request: Request) {
+  console.log('Login route called');
   try {
     const body = await request.json();
     const { firstName, lastName, username, email, password, role } = body;
