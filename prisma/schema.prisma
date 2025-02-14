@@ -1,18 +1,22 @@
 // prisma/schema.prisma
 
+// Remove this generator as it's not needed
+// generator seed {
+//   provider = "ts-node"
+//   require = ["tsconfig-paths/register"]
+// }
+
+// Keep only these generators
 datasource db {
-  provider = "mysql" // Change if needed
-  url      = "mysql://root:azizaziz1@localhost:3306/doc_connect"
+
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+
+
 }
 
 generator client {
   provider = "prisma-client-js"
-}
-
-// Add this new generator for seeding
-generator seed {
-  provider = "ts-node"
-  require = ["tsconfig-paths/register"]
 }
 
 /// Enums used in the models
