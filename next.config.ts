@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       'images.pexels.com',
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb'
+    },
+  },
+  webpack: (config) => {
+    config.externals = [...config.externals, { "socket.io-client": "socket.io-client" }];
+    return config;
+  },
 };
 
 export default nextConfig;

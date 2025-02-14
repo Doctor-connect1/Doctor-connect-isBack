@@ -1,24 +1,32 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // Clear existing data
+  await prisma.user.deleteMany();
+  await prisma.doctor.deleteMany();
+  await prisma.patient.deleteMany();
+
   // Create Users
   const users = [];
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 10; i++) {
+    const hashedPassword = await bcrypt.hash('password123', 10);
     const user = await prisma.user.create({
       data: {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
-        username: faker.internet.userName(),
-        password: faker.internet.password(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        username: faker.internet.username(),
+        password: hashedPassword,
         email: faker.internet.email(),
         role: faker.helpers.arrayElement(['Doctor', 'Patient', 'Admin']),
-        locationLatitude: faker.address.latitude(),
-        locationLongitude: faker.address.longitude(),
-        bio: faker.lorem.paragraph(),
-        meetingPrice: faker.finance.amount(),
+        locationLatitude: new Decimal(faker.location.latitude()),
+        locationLongitude: new Decimal(faker.location.longitude()),
+        bio: faker.lorem.sentence(10),
+        meetingPrice: new Decimal(faker.number.float({ min: 50, max: 200 })),
       },
     });
     users.push(user);
@@ -26,20 +34,20 @@ async function main() {
 
   // Create Doctors
   const doctors = [];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 5; i++) {
     const doctor = await prisma.doctor.create({
       data: {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: await bcrypt.hash('password123', 10),
         phone: faker.phone.number(),
-        specialty: faker.name.jobTitle(),
-        experience: faker.datatype.number({ min: 1, max: 30 }),
-        bio: faker.lorem.paragraph(),
+        specialty: faker.person.jobTitle(),
+        experience: faker.number.int({ min: 1, max: 30 }),
+        bio: faker.lorem.sentence(10),
         isVerified: faker.datatype.boolean(),
-        locationLatitude: faker.address.latitude(),
-        locationLongitude: faker.address.longitude(),
+        locationLatitude: new Decimal(faker.location.latitude()),
+        locationLongitude: new Decimal(faker.location.longitude()),
         userId: users[i].id,
       },
     });
@@ -48,115 +56,35 @@ async function main() {
 
   // Create Patients
   const patients = [];
-  for (let i = 100; i < 200; i++) {
+  for (let i = 5; i < 10; i++) {
     const patient = await prisma.patient.create({
       data: {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         email: faker.internet.email(),
         phone: faker.phone.number(),
-        dateOfBirth: faker.date.past(30),
+        dateOfBirth: faker.date.past({ years: 30 }),
         gender: faker.helpers.arrayElement(['Male', 'Female']),
-        medicalHistory: faker.lorem.paragraph(),
-        locationLatitude: faker.address.latitude(),
-        locationLongitude: faker.address.longitude(),
-        password: faker.internet.password(),
-        bio: faker.lorem.paragraph(),
-        userId: users[i].id,
+        medicalHistory: faker.lorem.sentence(10),
+        locationLatitude: new Decimal(faker.location.latitude()),
+        locationLongitude: new Decimal(faker.location.longitude()),
+        password: await bcrypt.hash('password123', 10),
+        profilePicture: faker.image.avatar(),
+        user: {
+          connect: {
+            id: users[i].id
+          }
+        }
       },
     });
     patients.push(patient);
   }
 
-  // Create Appointments
-  for (let i = 0; i < 200; i++) {
-    await prisma.appointment.create({
-      data: {
-        patientID: patients[i % patients.length].id,
-        doctorID: doctors[i % doctors.length].id,
-        appointmentDate: faker.date.future(),
-        durationMinutes: faker.datatype.number({ min: 15, max: 120 }),
-        status: faker.helpers.arrayElement(['pending', 'confirmed', 'rejected']),
-        type: faker.helpers.arrayElement(['SUR_TERRAIN', 'DISTANCE']),
-      },
-    });
-  }
-
-  // Create Availabilities
-  for (const doctor of doctors) {
-    for (let i = 0; i < 5; i++) {
-      await prisma.availability.create({
-        data: {
-          doctorID: doctor.id,
-          availableDate: faker.date.future(),
-          startTime: faker.date.future().toISOString(),
-          endTime: faker.date.future().toISOString(),
-          isAvailable: faker.datatype.boolean(),
-        },
-      });
-    }
-  }
-
-  // Create Chatrooms
-  for (let i = 0; i < 100; i++) {
-    await prisma.chatrooms.create({
-      data: {
-        patientID: patients[i].id,
-        doctorID: doctors[i].id,
-        startTime: faker.date.past(),
-      },
-    });
-  }
-
-  // Create ChatroomMessages
-  const chatrooms = await prisma.chatrooms.findMany();
-  for (const chatroom of chatrooms) {
-    for (let i = 0; i < 10; i++) {
-      await prisma.chatroomMessage.create({
-        data: {
-          chatroomID: chatroom.id,
-          senderID: faker.helpers.arrayElement([chatroom.patientID, chatroom.doctorID]),
-          messageText: faker.lorem.sentence(),
-        },
-      });
-    }
-  }
-
-  // Create DoctorReviews
-  for (const doctor of doctors) {
-    for (let i = 0; i < 5; i++) {
-      await prisma.doctorReview.create({
-        data: {
-          doctorID: doctor.id,
-          patientID: patients[i].id,
-          rating: faker.datatype.number({ min: 1, max: 5 }),
-          comment: faker.lorem.sentence(),
-          reviewText: faker.lorem.paragraph(),
-          reviewDate: faker.date.past(),
-        },
-      });
-    }
-  }
-
-  // Create Media
-  for (const user of users) {
-    await prisma.media.create({
-      data: {
-        userID: user.id,
-        url: faker.image.avatar(),
-      },
-    });
-  }
-
-  // Create Specialties
-  for (let i = 0; i < 50; i++) {
-    await prisma.specialty.create({
-      data: {
-        name: faker.name.jobTitle(),
-        userId: users[i].id,
-      },
-    });
-  }
+  console.log({
+    users: users.length,
+    doctors: doctors.length,
+    patients: patients.length,
+  });
 }
 
 main()
