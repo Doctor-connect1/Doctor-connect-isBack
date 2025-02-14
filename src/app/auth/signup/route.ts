@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { SignOptions } from 'jsonwebtoken';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     // Validate required fields
     if (!username || !email || !password || !role) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: "Missing required fields" },
         { status: 400 }
       );
     }
@@ -23,16 +23,13 @@ export async function POST(request: Request) {
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: email },
-          { username: username }
-        ]
-      }
+        OR: [{ email: email }, { username: username }],
+      },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { message: 'User already exists' },
+        { message: "User already exists" },
         { status: 400 }
       );
     }
@@ -55,12 +52,12 @@ export async function POST(request: Request) {
     // Fix JWT signing
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
 
     const signOptions: SignOptions = {
       //@ts-ignore
-      expiresIn: process.env.JWT_EXPIRES_IN || '8h'
+      expiresIn: process.env.JWT_EXPIRES_IN || "8h",
     };
 
     const token = jwt.sign(
@@ -72,17 +69,19 @@ export async function POST(request: Request) {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
-    return NextResponse.json({
-      message: 'User created successfully',
-      user: userWithoutPassword,
-      token,
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Signup error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      {
+        message: "User created successfully",
+        user: userWithoutPassword,
+        token: token,
+        role: user.role,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error", error },
       { status: 500 }
     );
   }
-} 
+}
