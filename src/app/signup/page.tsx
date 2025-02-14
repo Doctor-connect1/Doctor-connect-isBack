@@ -133,6 +133,44 @@ export default function SignupPage() {
                   <option value="Doctor">Doctor</option>
                 </select>
               </div>
+
+              {/* Conditionally render inputs based on role */}
+              {formData.role === 'Doctor' && (
+                <>
+                  <div>
+                    <input
+                      name="doctorSpecialization"
+                      type="text"
+                      placeholder="Specialization"
+                      onChange={handleChange}
+                      className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      name="doctorExperience"
+                      type="text"
+                      placeholder="Years of Experience"
+                      onChange={handleChange}
+                      className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
+                    />
+                  </div>
+                </>
+              )}
+
+              {formData.role === 'Patient' && (
+                <>
+                  <div>
+                    <input
+                      name="patientConditions"
+                      type="text"
+                      placeholder="Medical Conditions (if any)"
+                      onChange={handleChange}
+                      className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div>

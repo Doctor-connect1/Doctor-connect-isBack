@@ -57,20 +57,21 @@ export async function POST(request: Request) {
       jwtSecret,
       signOptions
     );
-    const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60 * 8}; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''
-      }`;
-
-
     const response = NextResponse.json(
       {
         message: 'User logged in successfully',
-        existingUser,
-        token,
       },
       { status: 200 } // Use status 200 for successful login
     );
-    response.headers.set('token', cookie);
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 8,
+      sameSite: "strict",
+      path: "/"
+    });
     return response;
+
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
