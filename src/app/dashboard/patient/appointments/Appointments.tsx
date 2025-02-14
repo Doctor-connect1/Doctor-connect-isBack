@@ -1,30 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-const upcomingAppointments = [
-  {
-    id: 1,
-    doctor: 'Dr. Sarah Johnson',
-    specialty: 'Cardiologist',
-    date: '2025-04-15',
-    time: '10:00 AM',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300'
-  },
-  {
-    id: 2,
-    doctor: 'Dr. Michael Chen',
-    specialty: 'Neurologist',
-    date: '2025-04-20',
-    time: '02:30 PM',
-    image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300'
-  }
-];
+interface Appointment {
+  id: number;
+  image: string;
+  doctor: string;
+  specialty: string;
+  date: string;
+  time: string;
+}
 
-export default function Appointments() {
+const Appointments = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const response = await fetch('/api/appointments');
+      const data = await response.json();
+      setAppointments(data);
+    };
+
+    fetchAppointments();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -37,7 +38,7 @@ export default function Appointments() {
               <Link href="dashboard/patient/Profile">Profile</Link>
             </li>
             <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
-              <Link href="dashboard/patient/appointments">Appointments</Link>
+              <Link href="/dashboard/patient/appointments">Appointments</Link>
             </li>
             <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
               <Link href="dashboard/patient/medical-history">Medical History</Link>
@@ -53,7 +54,7 @@ export default function Appointments() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold">Upcoming Appointments</h2>
           <div className="space-y-4">
-            {upcomingAppointments.map((appointment) => (
+            {appointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center p-4 border rounded-lg hover:bg-gray-50">
                 <img
                   src={appointment.image}
@@ -77,3 +78,5 @@ export default function Appointments() {
     </div>
   );
 }
+
+export default Appointments;

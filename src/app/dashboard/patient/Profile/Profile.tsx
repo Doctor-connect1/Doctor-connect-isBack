@@ -14,7 +14,7 @@ export default function PatientProfile() {
         <h1 className="text-2xl font-semibold">Patient Dashboard</h1>
         <nav className="mt-6">
           <ul>
-            <li className="py-3 px-4 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
+            <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
               <Link href="/dashboard/patient/Profile">Profile</Link>
             </li>
             <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
