@@ -67,9 +67,30 @@ export default function PatientProfile() {
   const [activeTab, setActiveTab] = useState('overview');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* <Navbar /> */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="w-full md:w-1/4 bg-blue-600 text-white p-6">
+        <h1 className="text-2xl font-semibold">Patient Dashboard</h1>
+        <p className="text-sm text-blue-200">Manage your health records easily</p>
+        <nav className="mt-6">
+          <ul>
+            <li className="py-3 px-4 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
+              <Link href="/dashboard/patient/Profile">Profile</Link>
+            </li>
+            <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
+              <Link href="/dashboard/patient/appointments">Appointments</Link>
+            </li>
+            <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
+              <Link href="/dashboard/patient/medical-history">Medical History</Link>
+            </li>
+            <li className="py-3 px-4 mt-2 bg-blue-700 rounded-lg cursor-pointer hover:bg-blue-800">
+              <Link href="/dashboard/patient/Prescriptions">Prescriptions</Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full md:w-3/4">
         {/* Patient Header */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
           <div className="bg-blue-600 p-6">
