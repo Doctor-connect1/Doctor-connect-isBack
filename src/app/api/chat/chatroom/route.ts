@@ -6,26 +6,25 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    // Verify JWT token
-    const token = request.headers.get('Authorization')?.split(' ')[1];
-    if (!token) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
+    const body = await request.json();
+    console.log('Received request body:', body); // Debug log
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined');
-    }
+    const { doctorId, patientId } = body;
 
-    const decoded = jwt.verify(token, jwtSecret) as { userId: number; role: string };
-    const { doctorId, patientId } = await request.json();
+    // Validate IDs
+    if (!doctorId || !patientId) {
+      return NextResponse.json(
+        { message: 'Missing required fields: doctorId and patientId' },
+        { status: 400 }
+      );
+    }
 
     // Check if chatroom already exists
     const existingChatroom = await prisma.chatrooms.findFirst({
       where: {
         AND: [
-          { doctorID: doctorId },
-          { patientID: patientId }
+          { doctorID: Number(doctorId) },
+          { patientID: Number(patientId) }
         ]
       }
     });
@@ -37,17 +36,33 @@ export async function POST(request: Request) {
     // Create new chatroom
     const chatroom = await prisma.chatrooms.create({
       data: {
-        doctorID: doctorId,
-        patientID: patientId,
+        doctorID: Number(doctorId),
+        patientID: Number(patientId),
         startTime: new Date(),
+      },
+      include: {
+        doctor: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        },
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        }
       }
     });
 
+    console.log('Created chatroom:', chatroom); // Debug log
     return NextResponse.json({ chatroom }, { status: 201 });
+
   } catch (error) {
-    console.error('Chatroom creation error:', error);
+    console.error('Server error details:', error); // Debug log
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Internal server error', error: error.message },
       { status: 500 }
     );
   }
