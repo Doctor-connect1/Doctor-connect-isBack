@@ -82,13 +82,19 @@ export async function POST(request: Request) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: 'User created successfully',
       user: userWithoutPassword,
       token,
     }, { status: 201 });
-
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 8,
+      sameSite: "strict",
+      path: "/"
+    });
+    return response;
   } catch (error) {
     console.error('Signup error details:', error);
     return NextResponse.json(

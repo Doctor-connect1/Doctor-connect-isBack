@@ -7,11 +7,8 @@
 
 
 datasource db {
-
   provider = "mysql"
   url      = env("DATABASE_URL")
-
-
 }
 
 generator client {
@@ -52,7 +49,7 @@ model User {
   role              Role     @map("Role")
   locationLatitude  Decimal? @map("LocationLatitude")
   locationLongitude Decimal? @map("LocationLongitude")
-  bio               String?  @db.Text @map("Bio")
+  bio               String?  @map("Bio") @db.Text
   meetingPrice      Decimal? @map("MeetingPrice")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -148,7 +145,7 @@ model Doctor {
   phone             String   @unique @map("phone")
   specialty         String   @map("specialty")
   experience        Int      @map("experience")
-  bio               String?  @db.Text @map("bio")
+  bio               String?  @map("bio") @db.Text
   profilePicture    String?  @map("profilePicture")
   isVerified        Boolean  @default(false) @map("isVerified")
   locationLatitude  Decimal? @map("LocationLatitude")
@@ -181,11 +178,11 @@ model Patient {
   dateOfBirth       DateTime @map("dateOfBirth")
   gender            Gender   @map("gender")
   profilePicture    String?  @map("profilePicture")
-  medicalHistory    String?  @db.Text @map("medicalHistory")
+  medicalHistory    String?  @map("medicalHistory") @db.Text
   locationLatitude  Decimal? @map("LocationLatitude")
   locationLongitude Decimal? @map("LocationLongitude")
   password          String   @map("Password")
-  bio               String?  @db.Text @map("bio")
+  bio               String?  @map("bio") @db.Text
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
