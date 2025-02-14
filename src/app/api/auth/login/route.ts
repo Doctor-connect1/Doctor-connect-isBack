@@ -11,10 +11,10 @@ export async function POST(request: Request) {
   console.log('Login route called');
   try {
     const body = await request.json();
-    const { firstName, lastName, username, email, password, role } = body;
+    const { email, password } = body;
 
     // Validate required fields
-    if (!username || !email || !password || !role) {
+    if (!email || !password) {
       return NextResponse.json(
         { message: 'Missing required fields' },
         { status: 400 }
@@ -23,35 +23,24 @@ export async function POST(request: Request) {
 
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: email },
-          { username: username }
-        ]
-      }
+      where: { email },
     });
 
-    if (existingUser) {
+    if (!existingUser) {
       return NextResponse.json(
-        { message: 'User already exists' },
+        { message: 'User not found' },
         { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        username,
-        email,
-        password: hashedPassword,
-        role,
-      },
-    });
+    // Compare password directly with hashed password in the database
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { message: 'Invalid credentials' },
+        { status: 400 }
+      );
+    }
 
     // Fix JWT signing
     const jwtSecret = process.env.JWT_SECRET;
@@ -60,30 +49,33 @@ export async function POST(request: Request) {
     }
 
     const signOptions: SignOptions = {
-      //@ts-ignore
-      expiresIn: process.env.JWT_EXPIRES_IN || '8h'
+      expiresIn: '8h',
     };
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: existingUser.id, role: existingUser.role },
       jwtSecret,
       signOptions
     );
+    const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60 * 8}; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''
+      }`;
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
 
-    return NextResponse.json({
-      message: 'User created successfully',
-      user: userWithoutPassword,
-      token,
-    }, { status: 201 });
-
+    const response = NextResponse.json(
+      {
+        message: 'User logged in successfully',
+        existingUser,
+        token,
+      },
+      { status: 200 } // Use status 200 for successful login
+    );
+    response.headers.set('token', cookie);
+    return response;
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Login error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }
     );
   }
-} 
+}
