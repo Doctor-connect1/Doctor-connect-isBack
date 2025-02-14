@@ -1,22 +1,16 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import next from 'next';
 import cors from 'cors';
-
-const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev });
-const nextHandler = nextApp.getRequestHandler();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Allow connections from your deployed frontend URL
+// Update allowed origins to match your setup
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3002",
-    "https://your-frontend-url.vercel.app", // Add your deployed frontend URL
-    "*" // For testing - remove in production
+    "http://localhost:4000"
 ];
 
 app.use(cors({
@@ -30,7 +24,8 @@ const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
         methods: ["GET", "POST"],
-        credentials: true
+        credentials: true,
+        transports: ['websocket', 'polling']
     }
 });
 
@@ -40,8 +35,14 @@ const connectedUsers = new Map();
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
     
-    connectedUsers.set(socket.id, { id: socket.id });
-    socket.emit('me', socket.id);
+    const userId = socket.id;
+    const userInfo = { 
+        id: userId,
+        username: `User-${userId.substr(0, 4)}`
+    };
+    connectedUsers.set(userId, userInfo);
+    
+    socket.emit('me', userId);
     io.emit('users', Array.from(connectedUsers.values()));
     
     socket.on('disconnect', () => {
@@ -51,51 +52,23 @@ io.on('connection', (socket) => {
     });
 
     socket.on('callUser', ({ userToCall, signal, from }) => {
-        io.to(userToCall).emit('callUser', { signal, from });
+        console.log(`Call request from ${from} to ${userToCall}`);
+        io.to(userToCall).emit('callUser', {
+            signal,
+            from,
+            name: connectedUsers.get(from)?.username || 'Unknown User'
+        });
     });
 
     socket.on('answerCall', ({ to, signal }) => {
-        io.to(to).emit('callAccepted', { signal });
+        console.log(`Call answered by ${socket.id} to ${to}`);
+        io.to(to).emit('callAccepted', { 
+            signal,
+            from: socket.id
+        });
     });
 });
 
-// Start servers
-const startServers = async () => {
-    try {
-        // Start Socket.IO server
-        await new Promise((resolve) => {
-            server.listen(PORT, () => {
-                console.log(`Server running on port ${PORT}`);
-                resolve();
-            });
-        });
-
-        // Start Next.js server
-        await nextApp.prepare();
-        const nextServer = express();
-        
-        // Add CORS to Next.js server
-        nextServer.use(cors({
-            origin: '*',
-            methods: ['GET', 'POST', 'OPTIONS'],
-            credentials: true
-        }));
-
-        nextServer.all('*', (req, res) => {
-            return nextHandler(req, res);
-        });
-
-        nextServer.listen(3000, () => {
-            console.log('Next.js server running on port 3000');
-        });
-    } catch (err) {
-        console.error('Error starting servers:', err);
-    }
-};
-
-// Handle server errors
-server.on('error', (error) => {
-    console.error('Server error:', error);
+server.listen(PORT, () => {
+    console.log(`Socket.IO server running on port ${PORT}`);
 });
-
-startServers();

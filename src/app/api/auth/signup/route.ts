@@ -10,15 +10,26 @@ const prisma = new PrismaClient();
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('Received signup data:', body);
+
     const { firstName, lastName, username, email, password, role } = body;
 
-    // Validate required fields
+    // Validate required fields with better error messages
     if (!username || !email || !password || !role) {
+      const missingFields = [];
+      if (!username) missingFields.push('username');
+      if (!email) missingFields.push('email');
+      if (!password) missingFields.push('password');
+      if (!role) missingFields.push('role');
+      
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: `Missing required fields: ${missingFields.join(', ')}` },
         { status: 400 }
       );
     }
+
+    // Log the role value
+    console.log('Role value:', role);
 
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
@@ -79,9 +90,9 @@ export async function POST(request: Request) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Signup error details:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Internal server error', error: error.message },
       { status: 500 }
     );
   }

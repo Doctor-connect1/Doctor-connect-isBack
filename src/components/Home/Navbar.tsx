@@ -1,70 +1,91 @@
 "use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { BsCameraVideoFill, BsChatDots } from 'react-icons/bs';
+import { useState } from "react";
+import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 
-export default function Navbar() {
-  const pathname = usePathname();
+const Navbar = () => {
+  const [nav, setNav] = useState(false);
+
+  const handleNav = () => {
+    setNav(!nav);
+  };
+
+  const navItems = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/services", label: "Services" },
+    { href: "/doctors", label: "Doctors" },
+    { href: "/contact", label: "Contact" },
+    { 
+      href: "/zoom", 
+      label: "TeleConsult",
+      icon: <BsCameraVideoFill className="h-5 w-5" />
+    },
+    {
+      href: "/chat",
+      label: "Messages",
+      icon: <BsChatDots className="h-5 w-5" />
+    },
+  ];
 
   return (
-    <nav className="bg-white py-4 px-6 shadow-sm">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Image
-            src="https://i.pinimg.com/originals/2a/35/b1/2a35b15e65c10785fb21d0f7a63e1a72.jpg"
-            alt="Healthcare Logo"
-            width={100}
-            height={100}
-          />
-          <span className="text-xl font-semibold">Healthcare</span>
+    <div className="w-full h-[90px] bg-white">
+      <div className="max-w-[1240px] mx-auto px-4 flex justify-between items-center h-full">
+        <div>
+          <h1 className="text-[#007E85] font-bold text-3xl">Doctor</h1>
+        </div>
+        <div className="hidden md:flex">
+          <ul className="flex gap-4">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-2 text-black hover:text-[#007E85] duration-300"
+                >
+                  {item.icon && item.icon}
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="hidden md:flex items-center gap-8">
-          <Link 
-            href="/" 
-            className={`relative ${
-              pathname === '/' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
-            }`}
-          >
-            Home
-            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-              pathname === '/' ? 'scale-x-100' : 'scale-x-0'
-            }`}></span>
-          </Link>
-          <Link 
-            href="/service" 
-            className="text-gray-600 hover:text-teal-600"
-          >
-            Service
-          </Link>
-          <Link 
-            href="/contact" 
-            className={`relative ${
-              pathname === '/contact' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
-            }`}
-          >
-            Contact Us
-            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-              pathname === '/contact' ? 'scale-x-100' : 'scale-x-0'
-            }`}></span>
-          </Link>
-          <Link href="/help" className="text-gray-600 hover:text-teal-600">Help</Link>
-          <Link href="/blogs" className="text-gray-600 hover:text-teal-600">Blogs</Link>
+        {/* Mobile Button */}
+        <div onClick={handleNav} className="block md:hidden">
+          {nav ? (
+            <AiOutlineClose size={30} className="text-black" />
+          ) : (
+            <AiOutlineMenu size={30} className="text-black" />
+          )}
         </div>
 
-        <div className="flex items-center gap-4">
-          <Link href="/signup" className="text-teal-600 hover:text-teal-700">
-            Sign Up
-          </Link>
-          <Link 
-            href="/login" 
-            className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
-          >
-            Log In
-          </Link>
+        {/* Mobile Menu */}
+        <div
+          className={
+            nav
+              ? "md:hidden fixed left-0 top-[90px] flex flex-col items-center justify-between w-full h-[calc(100vh-90px)] bg-white ease-in duration-300 z-40"
+              : "fixed left-[-100%] top-[90px] h-[calc(100vh-90px)] flex flex-col items-center justify-between ease-in duration-300"
+          }
+        >
+          <ul className="w-full p-4">
+            {navItems.map((item) => (
+              <li key={item.href} className="py-4 hover:bg-gray-100">
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-2 ml-4 text-black hover:text-[#007E85] duration-300"
+                >
+                  {item.icon && item.icon}
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-    </nav>
+    </div>
   );
-}
+};
+
+export default Navbar;

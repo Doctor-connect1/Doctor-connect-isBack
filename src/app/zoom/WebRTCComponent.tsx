@@ -9,7 +9,7 @@ export default function WebRTCComponent() {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState<any>(null);
   const [callAccepted, setCallAccepted] = useState(false);
-  const [myId, setMyId] = useState("");
+  const [myId, setMyId] = useState<string>('');
   const [callTo, setCallTo] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const [callerName, setCallerName] = useState("");
@@ -20,7 +20,9 @@ export default function WebRTCComponent() {
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    socketRef.current = io('http://localhost:4000');
+    socketRef.current = io('http://localhost:4000', {
+      transports: ['websocket', 'polling'],
+    });
 
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
@@ -34,8 +36,9 @@ export default function WebRTCComponent() {
       setMyId(id);
     });
 
-    socketRef.current.on('users', (users: any[]) => {
-      setUsers(users);
+    socketRef.current.on('users', (userList: any[]) => {
+      const filteredUsers = userList.filter(user => user.id !== myId);
+      setUsers(filteredUsers);
     });
 
     socketRef.current.on('callUser', (data: any) => {
@@ -49,7 +52,14 @@ export default function WebRTCComponent() {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
-      socketRef.current?.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off('callAccepted');
+        socketRef.current.off('callUser');
+        socketRef.current.disconnect();
+      }
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
     };
   }, []);
 
@@ -74,6 +84,7 @@ export default function WebRTCComponent() {
       }
     });
 
+    socketRef.current.off('callAccepted');
     socketRef.current.on('callAccepted', (data: any) => {
       setCallAccepted(true);
       peer.signal(data.signal);
@@ -107,9 +118,28 @@ export default function WebRTCComponent() {
     connectionRef.current = peer;
   };
 
+  const endCall = () => {
+    socketRef.current.off('callAccepted');
+    
+    if (connectionRef.current) {
+      connectionRef.current.destroy();
+      connectionRef.current = null;
+    }
+    
+    if (userVideo.current) {
+      userVideo.current.srcObject = null;
+    }
+    
+    setCallAccepted(false);
+    setReceivingCall(false);
+    setCallerSignal(null);
+    setCaller("");
+    setCallerName("");
+  };
+
   return (
-    <div>
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-6 mb-8">
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-6 mb-8 rounded-lg">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold">Video Chat Room</h1>
           <p className="mt-2 text-blue-100">Connect with others in real-time</p>
@@ -126,7 +156,7 @@ export default function WebRTCComponent() {
               autoPlay
               className="w-[400px] h-[300px] bg-black rounded-lg shadow-lg"
             />
-            <p className="mt-2 text-center text-gray-600">My Video</p>
+            <p className="mt-2 text-center text-gray-700 font-medium">My Video</p>
           </div>
           {callAccepted && (
             <div>
@@ -136,7 +166,15 @@ export default function WebRTCComponent() {
                 autoPlay
                 className="w-[400px] h-[300px] bg-black rounded-lg shadow-lg"
               />
-              <p className="mt-2 text-center text-gray-600">Remote Video</p>
+              <div className="mt-2 flex justify-between items-center">
+                <p className="text-center text-gray-600">Remote Video</p>
+                <button
+                  onClick={endCall}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                >
+                  End Call
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -175,41 +213,45 @@ export default function WebRTCComponent() {
           </div>
         )}
 
-        <div className="mt-4 w-full max-w-md">
-          <h3 className="text-lg font-semibold mb-2">Online Users:</h3>
+        <div className="mt-4 w-full max-w-md bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Connected Users:</h3>
           <ul className="divide-y divide-gray-200">
             {users.map((user) => (
               <li 
                 key={user.id} 
-                className="py-2 px-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center"
-                onClick={() => setCallTo(user.id)}
+                className="py-3 flex justify-between items-center hover:bg-gray-50 rounded-md px-3"
               >
-                <span>{user.id}</span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    callUser(user.id);
-                  }}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  Call
-                </button>
+                <span className="text-gray-700 font-medium">{user.username}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">{user.id}</span>
+                  <button 
+                    onClick={() => callUser(user.id)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  >
+                    Call
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-          <p className="text-center">
-            <span className="font-semibold">Your ID:</span> 
-            <span className="ml-2 text-blue-600">{myId}</span>
-            <button 
-              onClick={() => navigator.clipboard.writeText(myId)}
-              className="ml-2 text-gray-500 hover:text-gray-700"
-            >
-              📋
-            </button>
-          </p>
+        <div className="mt-4 bg-white p-4 rounded-lg shadow-md w-full max-w-md">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-700 font-medium">Your ID:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-blue-600 font-mono bg-blue-50 px-3 py-1 rounded-md">
+                {myId}
+              </span>
+              <button 
+                onClick={() => navigator.clipboard.writeText(myId)}
+                className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                title="Copy ID"
+              >
+                📋
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
