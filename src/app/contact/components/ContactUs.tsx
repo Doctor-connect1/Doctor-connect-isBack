@@ -16,9 +16,12 @@ export default function ContactUs() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...data,
-          subject: 'New Contact Form Submission',
-          to: 'your-email@example.com' // Replace with your email
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          topic: data.topic,
+          message: data.message
         }),
       });
 
@@ -26,7 +29,8 @@ export default function ContactUs() {
         throw new Error('Failed to send message');
       }
 
-      alert('Message sent successfully!');
+      const result = await response.json();
+      alert(result.message || 'Message sent successfully!');
     } catch (error) {
       alert('Failed to send message. Please try again.');
     }
@@ -50,6 +54,7 @@ export default function ContactUs() {
               <label className="mb-2">First Name</label>
               <input 
                 type="text" 
+                name="firstName"
                 placeholder="Enter your first name" 
                 className="border border-teal-600 p-3 rounded-lg w-full"
               />
@@ -58,6 +63,7 @@ export default function ContactUs() {
               <label className="mb-2">Last Name</label>
               <input 
                 type="text" 
+                name="lastName"
                 placeholder="Enter your last name" 
                 className="border border-teal-600 p-3 rounded-lg w-full"
               />
@@ -68,6 +74,7 @@ export default function ContactUs() {
               <label className="mb-2">Email</label>
               <input 
                 type="email" 
+                name="email"
                 placeholder="Enter your email" 
                 className="border border-teal-600 p-3 rounded-lg w-full"
               />
@@ -76,6 +83,7 @@ export default function ContactUs() {
               <label className="mb-2">Phone Number</label>
               <input 
                 type="tel" 
+                name="phone"
                 placeholder="Enter your phone number" 
                 className="border border-teal-600 p-3 rounded-lg w-full"
               />
@@ -83,7 +91,7 @@ export default function ContactUs() {
           </div>
           <div className="flex flex-col mb-4">
             <label className="mb-2">Choose a topic</label>
-            <select className="border border-teal-600 p-3 rounded-lg w-full">
+            <select name="topic" className="border border-teal-600 p-3 rounded-lg w-full">
               <option>Select one...</option>
               <option>General Inquiry</option>
               <option>Support</option>
@@ -93,6 +101,7 @@ export default function ContactUs() {
           <div className="flex flex-col mb-4">
             <label className="mb-2">Message</label>
             <textarea 
+              name="message"
               placeholder="Type your message..." 
               className="border border-teal-600 p-3 rounded-lg w-full"
               rows={4} 
