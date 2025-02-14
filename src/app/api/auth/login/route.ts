@@ -57,20 +57,12 @@ export async function POST(request: Request) {
       jwtSecret,
       signOptions
     );
-    const response = NextResponse.json(
+    return NextResponse.json(
       {
-        message: 'User logged in successfully',
+        message: 'User logged in successfully', token: token
       },
       { status: 200 } // Use status 200 for successful login
     );
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 8,
-      sameSite: "strict",
-      path: "/"
-    });
-    return response;
 
   } catch (error) {
     console.error('Login error:', error);
