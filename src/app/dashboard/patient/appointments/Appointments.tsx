@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import { Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
+// Add this interface at the top of the file
 interface Appointment {
   id: number;
-  image: string;
   doctor: string;
   specialty: string;
   date: string;
   time: string;
+  image: string;
 }
 
 const Appointments = () => {

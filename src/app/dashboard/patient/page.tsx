@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Calendar, Clock, FileText, Activity, Pill as Pills, ChevronRight, Bell, User, Heart, Clipboard } from 'lucide-react';
 import Link from 'next/link';
-// import Navbar from './../../components/Navbar';
-// import Footer from './../../components/Footer';
+import Profile from './Profile/Profile';
 
 const upcomingAppointments = [
   {
@@ -64,7 +63,18 @@ const recentTests = [
 ];
 
 export default function PatientProfile() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [profileData, setProfileData] = useState({
+    name: 'Sarah Anderson',
+    height: "5'6\"",
+    weight: '130 lbs',
+  });
+
+  const updateProfile = (data: { name?: string; height?: string; weight?: string }) => {
+    setProfileData(prev => ({
+      ...prev,
+      ...data
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -101,12 +111,9 @@ export default function PatientProfile() {
                 className="h-24 w-24 rounded-full border-4 border-white object-cover"
               />
               <div className="ml-6 text-white">
-                <h1 className="text-3xl font-bold">Sarah Anderson</h1>
+                <h1 className="text-3xl font-bold">{profileData.name}</h1>
                 <p className="text-blue-100">Patient ID: P-2025-0123</p>
               </div>
-              <button className="ml-auto bg-white text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50">
-                Edit Profile
-              </button>
             </div>
           </div>
           
@@ -130,7 +137,7 @@ export default function PatientProfile() {
                 <Activity className="h-6 w-6 text-blue-600" />
                 <div className="ml-3">
                   <p className="text-sm text-gray-500">Height/Weight</p>
-                  <p className="font-medium">5'6" / 130 lbs</p>
+                  <p className="font-medium">{profileData.height} / {profileData.weight}</p>
                 </div>
               </div>
               <div className="flex items-center">
@@ -143,6 +150,8 @@ export default function PatientProfile() {
             </div>
           </div>
         </div>
+
+        <Profile updateProfile={updateProfile} initialData={profileData} />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -253,7 +262,6 @@ export default function PatientProfile() {
           </div>
         </div>
       </main>
-      {/* <Footer /> */}
     </div>
   );
 }

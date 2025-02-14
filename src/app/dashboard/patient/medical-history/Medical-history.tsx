@@ -4,12 +4,26 @@ import { useState, useEffect } from 'react';
 import { Calendar, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 
-interface MedicalCondition {
-  id: number;
-  condition: string;
-  date: string;
-  notes: string;
-}
+const medicalHistory = [
+  {
+    id: 1,
+    condition: 'Hypertension',
+    date: '2025-01-10',
+    notes: 'Managed with medication.',
+  },
+  {
+    id: 2,
+    condition: 'Diabetes',
+    date: '2025-02-15',
+    notes: 'Regular monitoring required.',
+  },
+  {
+    id: 3,
+    condition: 'Asthma',
+    date: '2025-03-05',
+    notes: 'Use inhaler as needed.',
+  },
+];
 
 interface PastAppointment {
   id: number;
@@ -23,30 +37,24 @@ interface PastAppointment {
 function MedicalHistory() {
   const [activeTab, setActiveTab] = useState('history');
   const [pastAppointments, setPastAppointments] = useState<PastAppointment[]>([]);
-  const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    // This would be replaced with your actual API call
+    const fetchPastAppointments = async () => {
       try {
-        // Fetch past appointments
-        const appointmentsResponse = await fetch('/api/patient/appointments/past');
-        const appointmentsData = await appointmentsResponse.json();
-        setPastAppointments(appointmentsData);
-
-        // Fetch medical conditions
-        const conditionsResponse = await fetch('/api/patient/conditions');
-        const conditionsData = await conditionsResponse.json();
-        setMedicalConditions(conditionsData);
+        // TODO: Replace with actual API endpoint
+        const response = await fetch('/api/patient/past-appointments');
+        const data = await response.json();
+        setPastAppointments(data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching past appointments:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchPastAppointments();
   }, []);
 
   const getHealthStatusColor = (status: string) => {
@@ -109,29 +117,21 @@ function MedicalHistory() {
 
           {activeTab === 'history' ? (
             <div className="space-y-4">
-              {isLoading ? (
-                <div className="text-center py-4">Loading medical conditions...</div>
-              ) : medicalConditions.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">No medical conditions recorded</div>
-              ) : (
-                medicalConditions.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div>
-                      <h3 className="font-medium">{entry.condition}</h3>
-                      <p className="text-sm text-gray-500">Date: {new Date(entry.date).toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-500">Notes: {entry.notes}</p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
+              {medicalHistory.map((entry) => (
+                <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div>
+                    <h3 className="font-medium">{entry.condition}</h3>
+                    <p className="text-sm text-gray-500">Date: {entry.date}</p>
+                    <p className="text-sm text-gray-500">Notes: {entry.notes}</p>
                   </div>
-                ))
-              )}
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-4">Loading past appointments...</div>
-              ) : pastAppointments.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">No past appointments found</div>
               ) : (
                 pastAppointments.map((appointment) => (
                   <div
