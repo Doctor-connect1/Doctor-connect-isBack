@@ -27,11 +27,12 @@ export default function SignupPage() {
       });
 
       const data = await response.json();
-
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       if (!response.ok) {
         throw new Error(data.message);
       }
-
       // Redirect to dashboard or home page
       router.push('/');
 
