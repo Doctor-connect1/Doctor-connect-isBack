@@ -1,8 +1,8 @@
 // prisma/schema.prisma
 
 datasource db {
-  provider = "mysql" // Change if needed
-  url      = "mysql://root:azizaziz1@localhost:3306/doc_connect"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -243,4 +243,15 @@ model Specialty {
   user User? @relation("UserSpecialty", fields: [userId], references: [id])
 
   @@map("Specialty")
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  topic     String?
+  message   String
+  createdAt DateTime @default(now())
 }
