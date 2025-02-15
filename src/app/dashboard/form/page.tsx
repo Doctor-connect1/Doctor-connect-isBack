@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Upload, FileText } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Inter } from 'next/font/google';
+import { Cloudinary } from 'cloudinary-core';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
@@ -35,17 +36,14 @@ export default function Form() {
 
   const password = watch('password', '');
 
-  const onSubmit = (data) => {
-    console.log('Form Data:', { ...data, specialty: selectedSpecialty, experience: selectedExperience });
-  };
-
+  
   const handleFileChange = (event, setFile) => {
     const file = event.target.files[0];
     if (file) {
       setFile(URL.createObjectURL(file));
     }
   };
-
+  
   const validatePassword = (value) => {
     const strength = [
       value.length > 7,
@@ -55,13 +53,57 @@ export default function Form() {
     setPasswordStrength(strength);
     return strength === 3;
   };
-
+  
   const nextStep = async () => {
     const isValid = await trigger(['name', 'email', 'phone', 'bio']);
     if (isValid) {
       setStep(2);
     } else {
       alert('Please fill out all required fields.');
+    }
+  };
+  const cloudinary = new Cloudinary({ cloud_name:"vqqsqsqsv" ,secure: true });
+
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+    formData.append('file', profilePicture);
+    formData.append('upload_preset', 'your_upload_preset');
+
+    try {
+      const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const cloudinaryData = await cloudinaryResponse.json();
+      const profilePictureUrl = cloudinaryData.secure_url;
+
+      const apiData = {
+        firstName: data.name.split(' ')[0],
+        lastName: data.name.split(' ')[1] || '',
+        email: data.email,
+        experience: parseInt(selectedExperience),
+        password: data.password,
+        phone: data.phone,
+        specialty: selectedSpecialty,
+        profilePicture: profilePictureUrl,
+        locationLatitude: 10.2222254, // Replace with actual latitude
+        locationLongitude: 10.225514, // Replace with actual longitude
+      };
+
+      const token = localStorage.getItem('token');
+      const apiResponse = await fetch('http://localhost:3000/api/auth/become-doctor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(apiData),
+      });
+
+      const apiResult = await apiResponse.json();
+      console.log('API Response:', apiResult);
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
