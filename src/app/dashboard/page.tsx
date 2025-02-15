@@ -1,28 +1,62 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const userIsDoctor = useRef<boolean>(false);
 
   useEffect(() => {
+    const pathNavigate = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No token found in local storage.");
+        }
+        const response = await fetch(
+          "http://localhost:3000/api/auth/verify-doctor",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        userIsDoctor.current = data.isDoctor;
+        console.log("Server Response: userIsDoctor", userIsDoctor);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      }
+    };
+    pathNavigate();
     const timer = setTimeout(() => {
       setIsLoading(false);
       // Check the role in localStorage after animation
       const role = localStorage.getItem("role"); // Assuming role is stored in localStorage
       if (role === "Patient") {
         router.push("/dashboard/patient");
-      } else if (role === "Doctor") {
+      } else if (role === "Doctor" && userIsDoctor.current === true) {
         router.push("/dashboard/doctor");
+      } else if (role === "Doctor" && userIsDoctor.current === false) {
+        router.push("/dashboard/form");
       } else {
         router.push("/");
       }
-    }, 2000); // Ensure the delay aligns with animation duration
+    }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [router]);
 
   return (
