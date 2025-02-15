@@ -21,17 +21,23 @@ export default function DoctorSearch() {
 
   // Fetch doctors whenever search criteria change
   useEffect(() => {
-    // Only fetch doctors if the user has started searching (name, specialty, or isAvailable has a value)
-    if (name || specialty || isAvailable) {
+    // Only fetch doctors if the user has started searching (name or specialty has a value)
+    if (name || specialty) {
       const fetchDoctors = async () => {
         try {
+          // Fetch all doctors matching the name and specialty, regardless of availability
           const response = await fetch(
-            `http://localhost:3002/api/doctors/search?name=${name}&specialty=${specialty}&isVerified=${isAvailable}`
+            `http://localhost:3000/api/doctors/search?name=${name}&specialty=${specialty}`
           );
           const data = await response.json();
 
           if (response.ok) {
-            setFilteredDoctors(data.data); // Update filtered doctors from the API response
+            // If the availability toggle is ON, filter the results to show only available doctors
+            const filteredResults = isAvailable
+              ? data.data.filter((doctor: Doctor) => doctor.isVerified)
+              : data.data;
+
+            setFilteredDoctors(filteredResults); // Update filtered doctors
             setHasSearched(true); // Mark that the user has searched
           } else {
             console.error('Error fetching doctors');
@@ -86,7 +92,7 @@ export default function DoctorSearch() {
         </div>
 
         <div className="mt-6">
-          {hasSearched && (name || specialty || isAvailable) ? ( // Only show results if the user has searched and there are search criteria
+          {hasSearched && (name || specialty) ? ( // Only show results if the user has searched and there are search criteria
             filteredDoctors.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDoctors.map((doctor) => (
