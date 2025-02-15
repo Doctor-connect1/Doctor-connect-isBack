@@ -4,6 +4,6 @@ export default function AppointmentsPage() {
   return (
   
   <>
-
-  <Appointments /></>)
+  <Appointments />
+  </>)
 }
