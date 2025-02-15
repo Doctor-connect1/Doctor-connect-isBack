@@ -32,17 +32,15 @@ export default function Navbar() {
           {/* Conditionally render Home link */}
           <Link
             href="/"
-            className={`relative ${
-              pathname === "/"
-                ? "text-teal-600"
-                : "text-gray-600 hover:text-teal-600"
-            }`}
+            className={`relative ${pathname === "/"
+              ? "text-teal-600"
+              : "text-gray-600 hover:text-teal-600"
+              }`}
           >
             Home
             <span
-              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-                pathname === "/" ? "scale-x-100" : "scale-x-0"
-              }`}
+              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === "/" ? "scale-x-100" : "scale-x-0"
+                }`}
             ></span>
           </Link>
 
@@ -54,17 +52,15 @@ export default function Navbar() {
           {/* Conditionally render Contact Us link */}
           <Link
             href="/contact"
-            className={`relative ${
-              pathname === "/contact"
-                ? "text-teal-600"
-                : "text-gray-600 hover:text-teal-600"
-            }`}
+            className={`relative ${pathname === "/contact"
+              ? "text-teal-600"
+              : "text-gray-600 hover:text-teal-600"
+              }`}
           >
             Contact Us
             <span
-              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-                pathname === "/contact" ? "scale-x-100" : "scale-x-0"
-              }`}
+              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === "/contact" ? "scale-x-100" : "scale-x-0"
+                }`}
             ></span>
           </Link>
 
@@ -82,7 +78,7 @@ export default function Navbar() {
           {role === null ? ( // If no role is set (not logged in)
             <>
               <Link
-                href="/signup"
+                href="/firstsign"
                 className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
               >
                 <span className="relative z-10">Sign Up</span>
