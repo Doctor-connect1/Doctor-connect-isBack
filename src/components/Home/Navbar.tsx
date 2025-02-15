@@ -79,7 +79,7 @@ export default function Navbar() {
           {role === null ? ( // If no role is set (not logged in)
             <>
               <Link
-                href="/signup"
+                href="/firstsign"
                 className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
               >
                 <span className="relative z-10">Sign Up</span>
