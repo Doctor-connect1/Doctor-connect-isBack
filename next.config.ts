@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       'images.pexels.com',
       'picsum.photos', // Allowing picsum.photos for doctor images
       'via.placeholder.com', // Allowing placeholder.com for fallback images
+      'th.bing.com',
     ],
   },
 };

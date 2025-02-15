@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image'; // Import Image from Next.js
 
 type Doctor = {
   id: number;
@@ -7,6 +8,7 @@ type Doctor = {
   lastName: string;
   specialty: string;
   isAvailable: boolean;
+  profilePicture: string; // Add profilePicture to the Doctor type
 };
 
 export default function DoctorSearch() {
@@ -23,7 +25,7 @@ export default function DoctorSearch() {
       const fetchDoctors = async () => {
         try {
           const response = await fetch(
-            `http://localhost:3003/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
+            `http://localhost:3002/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
           );
           const data = await response.json();
 
@@ -88,13 +90,20 @@ export default function DoctorSearch() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDoctors.map((doctor) => (
                   <div key={doctor.id} className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-1 transition-all duration-300">
-                    <div className="relative h-48 w-full bg-gradient-to-b from-teal-50 to-white">
-                      {/* Placeholder for doctor image */}
-                      <div className="absolute inset-0 bg-gray-200" />
+                    {/* Image container without fixed height */}
+                    <div className="relative w-full aspect-square bg-gradient-to-b from-teal-50 to-white">
+                      <Image
+                        src={doctor.profilePicture} // Use the profile picture URL
+                        alt={`${doctor.firstName} ${doctor.lastName}`}
+                        fill // Use fill to make the image cover the container
+                        style={{ objectFit: 'cover' }} // Ensure the image covers the container
+                        className="rounded-t-lg" // Add rounded corners to the top of the image
+                      />
                       <h3 className="absolute top-4 right-4 bg-teal-500 text-white text-xs px-2 py-1 rounded-full">
                         {doctor.isAvailable ? 'Available' : 'Not Available'}
                       </h3>
                     </div>
+                    {/* Card content */}
                     <div className="p-6 text-center">
                       <h3 className="text-xl font-bold text-gray-900 mb-1">
                         {doctor.firstName} {doctor.lastName}
