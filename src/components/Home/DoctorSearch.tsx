@@ -1,8 +1,50 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+type Doctor = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  specialty: string;
+  isAvailable: boolean;
+};
 
 export default function DoctorSearch() {
-  const [isAvailable, setIsAvailable] = useState(false);
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]); // Store filtered doctors based on search
+  const [isAvailable, setIsAvailable] = useState(false); // Availability filter
+  const [name, setName] = useState(''); // Name search input
+  const [specialty, setSpecialty] = useState(''); // Specialty search input
+  const [hasSearched, setHasSearched] = useState(false); // Track if the user has searched
+
+  // Fetch doctors whenever search criteria change
+  useEffect(() => {
+    // Only fetch doctors if the user has started searching (name, specialty, or isAvailable has a value)
+    if (name || specialty || isAvailable) {
+      const fetchDoctors = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
+          );
+          const data = await response.json();
+
+          if (response.ok) {
+            setFilteredDoctors(data.data); // Update filtered doctors from the API response
+            setHasSearched(true); // Mark that the user has searched
+          } else {
+            console.error('Error fetching doctors');
+          }
+        } catch (error) {
+          console.error('Error fetching doctors:', error);
+        }
+      };
+
+      fetchDoctors(); // Trigger API call
+    } else {
+      // If no search criteria, clear the results and reset hasSearched
+      setFilteredDoctors([]);
+      setHasSearched(false);
+    }
+  }, [name, specialty, isAvailable]); // Dependencies for the useEffect
 
   return (
     <section className="container mx-auto px-4 py-12">
@@ -13,11 +55,15 @@ export default function DoctorSearch() {
             type="text"
             placeholder="Name"
             className="flex-1 min-w-[200px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600"
+            value={name}
+            onChange={(e) => setName(e.target.value)} // Update name state on change
           />
           <input
             type="text"
-            placeholder="Speciality"
+            placeholder="Specialty"
             className="flex-1 min-w-[200px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600"
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value)} // Update specialty state on change
           />
           <div className="flex items-center gap-2">
             <span>Available</span>
@@ -34,9 +80,37 @@ export default function DoctorSearch() {
               />
             </button>
           </div>
-          <button className="bg-teal-600 text-white px-8 py-3 rounded-md hover:bg-teal-700">
-            Search
-          </button>
+        </div>
+
+        <div className="mt-6">
+          {hasSearched && (name || specialty || isAvailable) ? ( // Only show results if the user has searched and there are search criteria
+            filteredDoctors.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredDoctors.map((doctor) => (
+                  <div key={doctor.id} className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-1 transition-all duration-300">
+                    <div className="relative h-48 w-full bg-gradient-to-b from-teal-50 to-white">
+                      {/* Placeholder for doctor image */}
+                      <div className="absolute inset-0 bg-gray-200" />
+                      <h3 className="absolute top-4 right-4 bg-teal-500 text-white text-xs px-2 py-1 rounded-full">
+                        {doctor.isAvailable ? 'Available' : 'Not Available'}
+                      </h3>
+                    </div>
+                    <div className="p-6 text-center">
+                      <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        {doctor.firstName} {doctor.lastName}
+                      </h3>
+                      <p className="text-teal-600 font-medium mb-2">{doctor.specialty}</p>
+                      <p className="text-gray-600 text-sm mb-4">4 years of experience</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No doctors found.</p>
+            )
+          ) : (
+            <p>Start typing or apply filters to search for doctors.</p> // Prompt the user to search
+          )}
         </div>
       </div>
     </section>
