@@ -1,241 +1,181 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Calendar, Clock, FileText, Activity, Pill as Pills, ChevronRight, Bell, User, Heart, Clipboard } from 'lucide-react';
-import Link from 'next/link';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-// import Navbar from './../../components/Navbar';
-// import Footer from './../../components/Footer';
-
-const upcomingAppointments = [
-  {
-    id: 1,
-    doctor: 'Dr. Sarah Johnson',
-    specialty: 'Cardiologist',
-    date: '2025-04-15',
-    time: '10:00 AM',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300'
-  },
-  {
-    id: 2,
-    doctor: 'Dr. Michael Chen',
-    specialty: 'Neurologist',
-    date: '2025-04-20',
-    time: '02:30 PM',
-    image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300'
-  }
-];
-
-const medications = [
-  {
-    name: 'Lisinopril',
-    dosage: '10mg',
-    frequency: 'Once daily',
-    startDate: '2025-01-15',
-    endDate: '2025-07-15'
-  },
-  {
-    name: 'Metformin',
-    dosage: '500mg',
-    frequency: 'Twice daily',
-    startDate: '2025-02-01',
-    endDate: '2025-08-01'
-  }
-];
-
-const recentTests = [
-  {
-    name: 'Complete Blood Count',
-    date: '2025-03-01',
-    status: 'Completed',
-    result: 'Normal'
-  },
-  {
-    name: 'Lipid Panel',
-    date: '2025-03-01',
-    status: 'Completed',
-    result: 'Review Required'
-  },
-  {
-    name: 'Thyroid Function',
-    date: '2025-02-15',
-    status: 'Completed',
-    result: 'Normal'
-  }
-];
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const userIsDoctor = useRef<boolean>(false);
+
+  useEffect(() => {
+    const pathNavigate = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No token found in local storage.");
+        }
+        const response = await fetch(
+          "http://localhost:3000/api/auth/verify-doctor",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        userIsDoctor.current = data.isDoctor;
+        console.log("Server Response: userIsDoctor", userIsDoctor);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      }
+    };
+    pathNavigate();
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Check the role in localStorage after animation
+      const role = localStorage.getItem("role"); // Assuming role is stored in localStorage
+      if (role === "Patient") {
+        router.push("/dashboard/patient");
+      } else if (role === "Doctor" && userIsDoctor.current === true) {
+        router.push("/dashboard/doctor");
+      } else if (role === "Doctor" && userIsDoctor.current === false) {
+        router.push("/dashboard/form");
+      } else {
+        router.push("/");
+      }
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [router]);
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* <Navbar /> */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Patient Header */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-            <div className="bg-blue-600 p-6">
-              <div className="flex items-center">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300"
-                  alt="Patient"
-                  className="h-24 w-24 rounded-full border-4 border-white object-cover"
+    <div className="min-h-screen bg-white">
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            className="fixed inset-0 bg-white z-50 flex items-center justify-center"
+            initial={{ scale: 1 }}
+            animate={{ scale: 1 }}
+            exit={{
+              scale: 2,
+              opacity: 0,
+              transition: {
+                duration: 0.8,
+                ease: [0.87, 0, 0.13, 1],
+              },
+            }}
+          >
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div
+                className="relative w-32 h-32 mx-auto mb-8"
+                animate={{
+                  rotate: [0, 360],
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  ease: "easeInOut",
+                  times: [0, 0.5, 1],
+                  repeat: Infinity,
+                  repeatType: "mirror",
+                }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-teal-50 rounded-full"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                  }}
                 />
-                <div className="ml-6 text-white">
-                  <h1 className="text-3xl font-bold">Sarah Anderson</h1>
-                  <p className="text-blue-100">Patient ID: P-2025-0123</p>
-                </div>
-                <button className="ml-auto bg-white text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50">
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="flex items-center">
-                  <User className="h-6 w-6 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-500">Age</p>
-                    <p className="font-medium">32 years</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Heart className="h-6 w-6 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-500">Blood Type</p>
-                    <p className="font-medium">A+</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Activity className="h-6 w-6 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-500">Height/Weight</p>
-                    <p className="font-medium">5'6" / 130 lbs</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Bell className="h-6 w-6 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-500">Allergies</p>
-                    <p className="font-medium">Penicillin</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                <motion.div
+                  className="absolute inset-4 bg-teal-100 rounded-full"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.7, 1, 0.7],
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    delay: 0.2,
+                  }}
+                />
+                <motion.div
+                  className="absolute inset-8 bg-teal-200 rounded-full"
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.9, 1, 0.9],
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    delay: 0.4,
+                  }}
+                />
+              </motion.div>
 
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Upcoming Appointments */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">Upcoming Appointments</h2>
-                  <Link href="/appointments" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    View All
-                  </Link>
-                </div>
-                <div className="space-y-4">
-                  {upcomingAppointments.map((appointment) => (
-                    <div key={appointment.id} className="flex items-center p-4 border rounded-lg hover:bg-gray-50">
-                      <img
-                        src={appointment.image}
-                        alt={appointment.doctor}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                      <div className="ml-4 flex-1">
-                        <h3 className="font-medium">{appointment.doctor}</h3>
-                        <p className="text-sm text-gray-500">{appointment.specialty}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{appointment.date}</p>
-                        <p className="text-sm text-gray-500">{appointment.time}</p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400 ml-4" />
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <motion.h1
+                className="text-3xl font-semibold text-teal-600"
+                animate={{
+                  y: [0, -10, 0],
+                  opacity: [0.8, 1, 0.8],
+                }}
+                transition={{
+                  duration: 2,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              >
+                Preparing Your Dashboard
+              </motion.h1>
+              <motion.p
+                className="mt-2 text-gray-600"
+                animate={{
+                  scale: [0.95, 1, 0.95],
+                }}
+                transition={{
+                  duration: 2,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              >
+                Just a moment...
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              {/* Recent Test Results */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-6">Recent Test Results</h2>
-                <div className="space-y-4">
-                  {recentTests.map((test) => (
-                    <div key={test.name} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">{test.name}</h3>
-                        <p className="text-sm text-gray-500">Date: {test.date}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm ${
-                          test.result === 'Normal' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {test.result}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-8">
-              {/* Current Medications */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">Current Medications</h2>
-                  <Pills className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="space-y-4">
-                  {medications.map((medication) => (
-                    <div key={medication.name} className="p-4 border rounded-lg">
-                      <h3 className="font-medium">{medication.name}</h3>
-                      <p className="text-sm text-gray-500">Dosage: {medication.dosage}</p>
-                      <p className="text-sm text-gray-500">Frequency: {medication.frequency}</p>
-                      <div className="mt-2 text-xs text-gray-400">
-                        {medication.startDate} - {medication.endDate}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-6">Quick Actions</h2>
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-between p-3 text-left border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-blue-600" />
-                      <span className="ml-3">Schedule Appointment</span>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </button>
-                  <button className="w-full flex items-center justify-between p-3 text-left border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <span className="ml-3">Request Medical Records</span>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </button>
-                  <button className="w-full flex items-center justify-between p-3 text-left border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center">
-                      <Clipboard className="h-5 w-5 text-blue-600" />
-                      <span className="ml-3">View Lab Results</span>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-        {/* <Footer /> */}
-      </div>
-    </ProtectedRoute>
+      <motion.div
+        className="p-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isLoading ? 0 : 1 }}
+        transition={{ delay: 0.5, duration: 0.8 }}
+      >
+        {/* Content */}
+      </motion.div>
+    </div>
   );
 }

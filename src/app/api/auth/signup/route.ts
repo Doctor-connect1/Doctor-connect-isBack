@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -12,18 +14,24 @@ export async function POST(req: Request) {
     // Validate required fields
     if (!email || !password || !name || !role) {
       return NextResponse.json(
+        { message: "Missing required fields" },
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
     // Check if user already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: email }, { username: username }],
+      },
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
     if (existingUser) {
       return NextResponse.json(
+        { message: "User already exists" },
         { error: 'User already exists' },
         { status: 400 }
       );
@@ -89,6 +97,33 @@ export async function POST(req: Request) {
         },
       });
 
+    // Fix JWT signing
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+
+    const signOptions: SignOptions = {
+      expiresIn: process.env.JWT_EXPIRES_IN || "8h",
+    };
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      jwtSecret,
+      signOptions
+    );
+   
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+    return NextResponse.json(
+      {
+        message: "User created successfully",
+        user: userWithoutPassword,
+        token: token,
+        role: user.role,
+      },
+      { status: 201 }
+    );
       return NextResponse.json({
         success: true,
         message: 'User account created successfully',
@@ -102,8 +137,9 @@ export async function POST(req: Request) {
     }
 
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error("Signup error:", error);
     return NextResponse.json(
+      { message: "Internal server error" },
       { 
         success: false,
         error: 'Error creating account',
@@ -114,4 +150,4 @@ export async function POST(req: Request) {
   } finally {
     await prisma.$disconnect();
   }
-} 
+}

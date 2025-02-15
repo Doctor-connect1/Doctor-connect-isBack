@@ -42,6 +42,10 @@ export default function SignupPage() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
       let data;
       try {
         data = await response.json();
@@ -53,6 +57,8 @@ export default function SignupPage() {
       }
 
       if (!response.ok) {
+       
+        throw new Error(data.message);
         throw new Error(data?.error || 'Signup failed');
       }
 
