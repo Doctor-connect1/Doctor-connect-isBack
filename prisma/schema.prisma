@@ -130,6 +130,7 @@ model ChatroomMessage {
 
   chatroom Chatrooms @relation(fields: [chatroomID], references: [id])
   sender   User      @relation("SenderMessages", fields: [senderID], references: [id])
+  media    Media[]   @relation("MessageMedia") // Add this line
 
   @@map("ChatroomMessages")
 }
@@ -217,17 +218,31 @@ model DoctorReview {
   @@map("DoctorReview")
 }
 
+/// The MediaType model (maps to "MediaType")
+enum MediaType {
+  PNG
+  JPEG
+  PDF
+  DOC
+  DOCX
+  MP4
+  MP3
+}
 /// The Media model (maps to "Media")
 model Media {
-  id        Int    @id @default(autoincrement())
-  userID    Int?   @unique @map("UserID") // Added @unique
-  doctorId  Int?   @unique // Added @unique
-  patientId Int?   @unique // Added @unique
-  url       String
+  id          Int        @id @default(autoincrement())
+  userID      Int?       @unique @map("UserID")
+  doctorId    Int?       @unique
+  patientId   Int?       @unique
+  messageId   Int?       @map("MessageID")  // Nullable foreign key
+  url         String
+  type        MediaType @default(PNG)
 
-  user    User?    @relation("UserProfilePicture", fields: [userID], references: [id])
-  doctor  Doctor?  @relation("DoctorProfilePicture", fields: [doctorId], references: [id])
-  patient Patient? @relation("PatientProfilePicture", fields: [patientId], references: [id])
+
+  user        User?      @relation("UserProfilePicture", fields: [userID], references: [id])
+  doctor      Doctor?    @relation("DoctorProfilePicture", fields: [doctorId], references: [id])
+  patient     Patient?   @relation("PatientProfilePicture", fields: [patientId], references: [id])
+  message     ChatroomMessage? @relation("MessageMedia", fields: [messageId], references: [id])
 
   @@map("Media")
 }

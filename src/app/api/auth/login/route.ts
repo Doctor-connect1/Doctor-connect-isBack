@@ -54,14 +54,16 @@ export async function POST(request: Request) {
 
     const token = jwt.sign(
       { userId: existingUser.id, role: existingUser.role },
+      
       jwtSecret,
       signOptions
     );
     return NextResponse.json(
       {
-        message: 'User logged in successfully', token: token
+        message: 'User logged in successfully', token: token, role: existingUser.role
       },
-      { status: 200 } // Use status 200 for successful login
+      {status: 200 }
+       // Use status 200 for successful login
     );
 
   } catch (error) {

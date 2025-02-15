@@ -1,91 +1,127 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { BsCameraVideoFill, BsChatDots } from 'react-icons/bs';
-import { useState } from "react";
-import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { Map } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
-const Navbar = () => {
-  const [nav, setNav] = useState(false);
+export default function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const handleNav = () => {
-    setNav(!nav);
+  // Menu items based on role
+  const getMenuItems = () => {
+    if (!isAuthenticated) {
+      return (
+        <>
+          <Link href="/login" className="text-gray-700 hover:text-blue-600">Login</Link>
+          <Link href="/register" className="text-gray-700 hover:text-blue-600">Register</Link>
+        </>
+      );
+    }
+
+    if (user?.role === 'DOCTOR') {
+      return (
+        <>
+          <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
+          <Link href="/appointments" className="text-gray-700 hover:text-blue-600">Appointments</Link>
+          <button onClick={logout} className="text-gray-700 hover:text-blue-600">Logout</button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
+        <Link href="/find-doctors" className="text-gray-700 hover:text-blue-600">Find Doctors</Link>
+        <button onClick={logout} className="text-gray-700 hover:text-blue-600">Logout</button>
+      </>
+    );
   };
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/services", label: "Services" },
-    { href: "/doctors", label: "Doctors" },
-    { href: "/contact", label: "Contact" },
-    { 
-      href: "/zoom", 
-      label: "TeleConsult",
-      icon: <BsCameraVideoFill className="h-5 w-5" />
-    },
-    {
-      href: "/chat",
-      label: "Messages",
-      icon: <BsChatDots className="h-5 w-5" />
-    },
-  ];
+  const handleChatClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+    // Set cookie before navigation
+    document.cookie = `token=${token}; path=/`;
+    window.location.href = '/chat/roomId';
+  };
 
   return (
-    <div className="w-full h-[90px] bg-white">
-      <div className="max-w-[1240px] mx-auto px-4 flex justify-between items-center h-full">
-        <div>
-          <h1 className="text-[#007E85] font-bold text-3xl">Doctor</h1>
-        </div>
-        <div className="hidden md:flex">
-          <ul className="flex gap-4">
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="flex items-center gap-2 text-black hover:text-[#007E85] duration-300"
-                >
-                  {item.icon && item.icon}
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+    <nav className="bg-white py-4 px-6 shadow-sm">
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Image
+            src="https://i.pinimg.com/originals/2a/35/b1/2a35b15e65c10785fb21d0f7a63e1a72.jpg"
+            alt="Healthcare Logo"
+            width={100}
+            height={100}
+          />
+          <span className="text-xl font-semibold">Healthcare</span>
         </div>
 
-        {/* Mobile Button */}
-        <div onClick={handleNav} className="block md:hidden">
-          {nav ? (
-            <AiOutlineClose size={30} className="text-black" />
-          ) : (
-            <AiOutlineMenu size={30} className="text-black" />
+        <div className="hidden md:flex items-center gap-8">
+          {/* Existing links */}
+          <Link href="/" className={`relative ${pathname === "/" ? "text-teal-600" : "text-gray-600 hover:text-teal-600"}`}>
+            Home
+          </Link>
+          <Link href="/service" className="text-gray-600 hover:text-teal-600">
+            Service
+          </Link>
+          <Link href="/contact" className="text-gray-600 hover:text-teal-600">
+            Contact Us
+          </Link>
+          <Link href="/help" className="text-gray-600 hover:text-teal-600">
+            Help
+          </Link>
+          <Link href="/blogs" className="text-gray-600 hover:text-teal-600">
+            Blogs
+          </Link>
+          <Link 
+            href="/find-doctors" 
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+          >
+            <Map className="h-5 w-5" />
+            <span>Find Doctors</span>
+          </Link>
+
+          {/* Chat and Video icons - only show when logged in */}
+          {isAuthenticated && (
+            <>
+              <Link 
+                href="/zoom" 
+                className="flex items-center gap-2 text-gray-600 hover:text-teal-600"
+              >
+                <BsCameraVideoFill className="h-5 w-5" />
+                <span>TeleConsult</span>
+              </Link>
+              <Link 
+                href="#"
+                onClick={handleChatClick}
+                className="flex items-center gap-2 text-gray-600 hover:text-teal-600"
+              >
+                <BsChatDots className="h-5 w-5" />
+                <span>Messages</span>
+              </Link>
+            </>
           )}
         </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={
-            nav
-              ? "md:hidden fixed left-0 top-[90px] flex flex-col items-center justify-between w-full h-[calc(100vh-90px)] bg-white ease-in duration-300 z-40"
-              : "fixed left-[-100%] top-[90px] h-[calc(100vh-90px)] flex flex-col items-center justify-between ease-in duration-300"
-          }
-        >
-          <ul className="w-full p-4">
-            {navItems.map((item) => (
-              <li key={item.href} className="py-4 hover:bg-gray-100">
-                <Link
-                  href={item.href}
-                  className="flex items-center gap-2 ml-4 text-black hover:text-[#007E85] duration-300"
-                >
-                  {item.icon && item.icon}
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        {/* Auth Buttons */}
+        <div className="flex items-center gap-4">
+          {getMenuItems()}
         </div>
       </div>
-    </div>
+    </nav>
   );
-};
-
-export default Navbar;
+}

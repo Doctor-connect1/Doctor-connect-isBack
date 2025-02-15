@@ -2,8 +2,11 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+
 const LoginForm = () => {
     const router = useRouter();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -22,16 +25,14 @@ const LoginForm = () => {
             });
 
             const data = await response.json();
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
-
+            
             if (!response.ok) {
                 throw new Error(data.message);
             }
-            // Redirect to dashboard or home page
-            router.push('/');
 
+            if (data.token) {
+                login(data.token);
+            }
         } catch (error: any) {
             setError(error.message);
         }
@@ -59,6 +60,7 @@ const LoginForm = () => {
                             <input
                                 id="email"
                                 type="email"
+                                value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 placeholder="Enter your email"
                                 className="w-full p-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -71,6 +73,7 @@ const LoginForm = () => {
                             <input
                                 id="password"
                                 type="password"
+                                value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 placeholder="Enter your password"
                                 className="w-full p-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
