@@ -9,7 +9,9 @@
 // Keep only these generators
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:azizaziz1@localhost:3306/doc_connect"
+
+
 }
 
 generator client {
