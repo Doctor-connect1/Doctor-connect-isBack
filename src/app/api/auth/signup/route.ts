@@ -71,16 +71,24 @@ export async function POST(request: Request) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
+
     return NextResponse.json({
       message: 'User created successfully',
       user: userWithoutPassword,
-      token: token,
+      token,
     }, { status: 201 });
+
   } catch (error) {
-    console.error('Signup error:', error);
+    // Check if the error is an instance of Error
+    if (error instanceof Error) {
+      console.error('Signup error:', error.message);
+    } else {
+      console.error('Signup error:', error);
+    }
+
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }
     );
   }
-} 
+}

@@ -21,44 +21,40 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link 
-            href="/" 
-            className={`relative ${
-              pathname === '/' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
-            }`}
+          <Link
+            href="/"
+            className={`relative ${pathname === '/' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
+              }`}
           >
             Home
-            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-              pathname === '/' ? 'scale-x-100' : 'scale-x-0'
-            }`}></span>
+            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === '/' ? 'scale-x-100' : 'scale-x-0'
+              }`}></span>
           </Link>
-          <Link 
-            href="/service" 
+          <Link
+            href="/service"
             className="text-gray-600 hover:text-teal-600"
           >
             Service
           </Link>
-          <Link 
-            href="/contact" 
-            className={`relative ${
-              pathname === '/contact' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
-            }`}
+          <Link
+            href="/contact"
+            className={`relative ${pathname === '/contact' ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'
+              }`}
           >
             Contact Us
-            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-              pathname === '/contact' ? 'scale-x-100' : 'scale-x-0'
-            }`}></span>
+            <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === '/contact' ? 'scale-x-100' : 'scale-x-0'
+              }`}></span>
           </Link>
           <Link href="/help" className="text-gray-600 hover:text-teal-600">Help</Link>
           <Link href="/blogs" className="text-gray-600 hover:text-teal-600">Blogs</Link>
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/signup" className="text-teal-600 hover:text-teal-700">
+          <Link href="/firstsign" className="text-teal-600 hover:text-teal-700">
             Sign Up
           </Link>
-          <Link 
-            href="/login" 
+          <Link
+            href="/login"
             className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
           >
             Log In
