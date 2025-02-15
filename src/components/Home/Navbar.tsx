@@ -6,58 +6,14 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
-  const [role, setRole] = useState(null); // State to store the role
+  const [role, setRole] = useState(""); // State to store the role
   const pathname = usePathname();
-  const router = useRouter();
-
-  // Menu items based on role
-  const getMenuItems = () => {
-    if (!isAuthenticated) {
-      return (
-        <>
-          <Link href="/login" className="text-gray-700 hover:text-blue-600">Login</Link>
-          <Link href="/register" className="text-gray-700 hover:text-blue-600">Register</Link>
-        </>
-      );
-    }
-
-    if (user?.role === 'DOCTOR') {
-      return (
-        <>
-          <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
-          <Link href="/appointments" className="text-gray-700 hover:text-blue-600">Appointments</Link>
-          <button onClick={logout} className="text-gray-700 hover:text-blue-600">Logout</button>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
-        <Link href="/find-doctors" className="text-gray-700 hover:text-blue-600">Find Doctors</Link>
-        <button onClick={logout} className="text-gray-700 hover:text-blue-600">Logout</button>
-      </>
-    );
-  };
-
-  const handleChatClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      window.location.href = '/login';
-      return;
-    }
-
-    // Set cookie before navigation
-    document.cookie = `token=${token}; path=/`;
-    window.location.href = '/chat/roomId';
-  };
 
   // Fetch the role from localStorage when the component mounts
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
+    setRole(storedRole ?? "");
+
   }, []); // Empty dependency array to run this once when the component mounts
 
   return (
@@ -77,17 +33,15 @@ export default function Navbar() {
           {/* Conditionally render Home link */}
           <Link
             href="/"
-            className={`relative ${
-              pathname === "/"
-                ? "text-teal-600"
-                : "text-gray-600 hover:text-teal-600"
-            }`}
+            className={`relative ${pathname === "/"
+              ? "text-teal-600"
+              : "text-gray-600 hover:text-teal-600"
+              }`}
           >
             Home
             <span
-              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-                pathname === "/" ? "scale-x-100" : "scale-x-0"
-              }`}
+              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === "/" ? "scale-x-100" : "scale-x-0"
+                }`}
             ></span>
           </Link>
 
@@ -99,17 +53,15 @@ export default function Navbar() {
           {/* Conditionally render Contact Us link */}
           <Link
             href="/contact"
-            className={`relative ${
-              pathname === "/contact"
-                ? "text-teal-600"
-                : "text-gray-600 hover:text-teal-600"
-            }`}
+            className={`relative ${pathname === "/contact"
+              ? "text-teal-600"
+              : "text-gray-600 hover:text-teal-600"
+              }`}
           >
             Contact Us
             <span
-              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${
-                pathname === "/contact" ? "scale-x-100" : "scale-x-0"
-              }`}
+              className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 transform origin-left transition-transform duration-300 ${pathname === "/contact" ? "scale-x-100" : "scale-x-0"
+                }`}
             ></span>
           </Link>
 

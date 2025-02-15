@@ -46,34 +46,16 @@ export default function SignupPage() {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
-      let data;
-      try {
-        data = await response.json();
-      } catch (error) {
-        if (error instanceof Error) {
-          console.log("Error: ", error.stack);
-        }
-        throw new Error('Invalid response from server');
       }
-
       if (!response.ok) {
        
         throw new Error(data.message);
-        throw new Error(data?.error || 'Signup failed');
       }
+      // Redirect to dashboard or home page
+      router.push('/');
 
-      if (data?.success) {
-        router.push('/login');
-      } else {
-        setError(data?.error || 'Signup failed');
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log("Error: ", error.stack);
-      }
-      setError(error instanceof Error ? error.message : 'An error occurred during signup');
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      setError(error.message);
     }
   };
 
