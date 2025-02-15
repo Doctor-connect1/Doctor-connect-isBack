@@ -23,7 +23,7 @@ export default function DoctorSearch() {
       const fetchDoctors = async () => {
         try {
           const response = await fetch(
-            `http://localhost:3000/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
+            `http://localhost:3003/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
           );
           const data = await response.json();
 
