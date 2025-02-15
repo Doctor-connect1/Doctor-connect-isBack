@@ -45,11 +45,13 @@ export default function SignupPage() {
         });
 
         const result = await response.json();
-        localStorage.setItem('token', result.token);
+        console.log("result", result);
         if (response.ok) {
-          // On success, redirect to the dashboard
-          console.log("ok response");
-          router.push('/');
+          // On success, store token and redirect to the dashboard
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('role', "Doctor");
+          console.log('Doctor Signup Successful');
+          router.push('/'); // Redirect to home/dashboard
         } else {
           // On error, set error message
           setError(result.message || 'Error during signup');

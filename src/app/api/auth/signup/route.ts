@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { SignOptions } from 'jsonwebtoken';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     // Validate required fields
     if (!username || !email || !password || !role) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: "Missing required fields" },
         { status: 400 }
       );
     }
@@ -23,16 +23,13 @@ export async function POST(request: Request) {
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: email },
-          { username: username }
-        ]
-      }
+        OR: [{ email: email }, { username: username }],
+      },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { message: 'User already exists' },
+        { message: "User already exists" },
         { status: 400 }
       );
     }
@@ -55,7 +52,7 @@ export async function POST(request: Request) {
     // Fix JWT signing
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
 
     const signOptions: SignOptions = {
@@ -71,23 +68,15 @@ export async function POST(request: Request) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-
     return NextResponse.json({
       message: 'User created successfully',
       user: userWithoutPassword,
-      token,
+      token: token,
     }, { status: 201 });
-
   } catch (error) {
-    // Check if the error is an instance of Error
-    if (error instanceof Error) {
-      console.error('Signup error:', error.message);
-    } else {
-      console.error('Signup error:', error);
-    }
-
+    console.error('Signup error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
