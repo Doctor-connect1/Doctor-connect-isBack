@@ -56,7 +56,8 @@ export async function POST(request: Request) {
     }
 
     const signOptions: SignOptions = {
-      expiresIn: process.env.JWT_EXPIRES_IN || "8h",
+      //@ts-ignore
+      expiresIn: process.env.JWT_EXPIRES_IN || '8h'
     };
 
     const token = jwt.sign(
@@ -64,20 +65,16 @@ export async function POST(request: Request) {
       jwtSecret,
       signOptions
     );
-   
+
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-    return NextResponse.json(
-      {
-        message: "User created successfully",
-        user: userWithoutPassword,
-        token: token,
-        role: user.role,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      message: 'User created successfully',
+      user: userWithoutPassword,
+      token: token,
+    }, { status: 201 });
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error('Signup error:', error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
