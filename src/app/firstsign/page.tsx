@@ -12,7 +12,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Patient');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,105 +209,8 @@ export default function SignupPage() {
               </a>
             </p>
           </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-              />
-            </div>
-            <div>
-              <input
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-              />
-            </div>
-            <div>
-              <input
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-              />
-            </div>
-            <div>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-              >
-                <option value="">Select Role</option>
-                <option value="USER">Patient</option>
-                <option value="DOCTOR">Doctor</option>
-              </select>
-            </div>
-
-            {formData.role === 'DOCTOR' && (
-              <>
-                <div>
-                  <input
-                    name="specialty"
-                    type="text"
-                    value={formData.specialty}
-                    onChange={handleChange}
-                    placeholder="Specialty"
-                    required
-                    className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-                  />
-                </div>
-                <div>
-                  <input
-                    name="experience"
-                    type="number"
-                    value={formData.experience}
-                    onChange={handleChange}
-                    placeholder="Years of Experience"
-                    required
-                    className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00897B]"
-                  />
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {isLoading ? 'Creating account...' : 'Sign up'}
-          </button>
-        </form>
-
-        {/* Link to login page */}
-        <div className="mt-4 text-center">
-          <p>
-            Already have an account?{' '}
-            <a href="/login" className="text-[#00897B] hover:text-[#007F6A] font-medium">
-              Login here
-            </a>
-          </p>
         </div>
       </div>
     </div>
   );
 }
-
