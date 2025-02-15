@@ -9,7 +9,7 @@
 // Keep only these generators
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:azizaziz1@localhost:3306/doc_connect"
+  url      = "mysql://root:root@localhost:3306/doc_connect"
 
 
 }

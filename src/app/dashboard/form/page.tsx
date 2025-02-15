@@ -7,6 +7,7 @@ import { Upload, FileText } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Inter } from 'next/font/google';
 import { Cloudinary } from 'cloudinary-core';
+import { useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
@@ -33,9 +34,10 @@ export default function Form() {
   const [selectedExperience, setSelectedExperience] = useState(experienceOptions[0]);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false); // Loading state
 
   const password = watch('password', '');
-
+  const router = useRouter();
   
   const handleFileChange = (event, setFile) => {
     const file = event.target.files[0];
@@ -62,9 +64,12 @@ export default function Form() {
       alert('Please fill out all required fields.');
     }
   };
-  const cloudinary = new Cloudinary({ cloud_name:"vqqsqsqsv" ,secure: true });
+
+  const cloudinary = new Cloudinary({ cloud_name: "vqqsqsqsv", secure: true });
 
   const onSubmit = async (data) => {
+    setLoading(true); // Set loading to true when the form is submitted
+
     const formData = new FormData();
     formData.append('file', profilePicture);
     formData.append('upload_preset', 'your_upload_preset');
@@ -102,8 +107,10 @@ export default function Form() {
 
       const apiResult = await apiResponse.json();
       console.log('API Response:', apiResult);
+      router.push("/dashboard/doctor"); // Navigate to the dashboard
     } catch (error) {
       console.error('Error:', error);
+      setLoading(false); // Reset loading state if an error occurs
     }
   };
 
@@ -378,11 +385,21 @@ export default function Form() {
 
               <motion.button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-600 transition-all shadow-lg"
+                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-600 transition-all shadow-lg flex items-center justify-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                disabled={loading} // Disable the button when loading
               >
-                Submit
+                {loading ? (
+                  <motion.div
+                    className="w-6 h-6 border-2 border-white border-t-2 border-t-transparent rounded-full animate-spin"
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  />
+                ) : (
+                  'Submit'
+                )}
               </motion.button>
             </motion.div>
           )}
