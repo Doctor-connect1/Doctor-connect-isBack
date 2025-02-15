@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const name = searchParams.get('name') || ''; // Get 'name' from query string (default to empty string if not present)
     const specialty = searchParams.get('specialty') || ''; // Get 'specialty' from query string (default to empty string if not present)
-    const isAvailable = searchParams.get('isAvailable') === 'true'; // 'true' or 'false' for availability filter
+    const isVerified = searchParams.get('isVerified') === 'true'; // 'true' or 'false' for availability filter
 
     // Query the database with the filtered conditions
     const doctors = await prisma.doctor.findMany({
@@ -33,9 +33,9 @@ export async function GET(request: Request) {
               contains: specialty, // Case-insensitive search for specialty
             },
           },
-        //   {
-        //     isAvailable: isAvailable, // Only get available doctors if isAvailable is true
-        //   },
+          {
+            isVerified: isVerified, // Only get available doctors if isAvailable is true
+          },
         ],
       },
     });

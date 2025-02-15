@@ -7,12 +7,13 @@ type Doctor = {
   firstName: string;
   lastName: string;
   specialty: string;
-  isAvailable: boolean;
-  profilePicture: string; // Add profilePicture to the Doctor type
+  experience: number;
+  isVerified: boolean; // Boolean to match the API response
+  profilePicture: string;
 };
 
 export default function DoctorSearch() {
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]); // Store filtered doctors based on search
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [isAvailable, setIsAvailable] = useState(false); // Availability filter
   const [name, setName] = useState(''); // Name search input
   const [specialty, setSpecialty] = useState(''); // Specialty search input
@@ -25,7 +26,7 @@ export default function DoctorSearch() {
       const fetchDoctors = async () => {
         try {
           const response = await fetch(
-            `http://localhost:3002/api/doctors/search?name=${name}&specialty=${specialty}&isAvailable=${isAvailable}`
+            `http://localhost:3002/api/doctors/search?name=${name}&specialty=${specialty}&isVerified=${isAvailable}`
           );
           const data = await response.json();
 
@@ -96,11 +97,12 @@ export default function DoctorSearch() {
                         src={doctor.profilePicture} // Use the profile picture URL
                         alt={`${doctor.firstName} ${doctor.lastName}`}
                         fill // Use fill to make the image cover the container
+                        sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw" // Use sizes attribute for responsive images
                         style={{ objectFit: 'cover' }} // Ensure the image covers the container
                         className="rounded-t-lg" // Add rounded corners to the top of the image
                       />
                       <h3 className="absolute top-4 right-4 bg-teal-500 text-white text-xs px-2 py-1 rounded-full">
-                        {doctor.isAvailable ? 'Available' : 'Not Available'}
+                        {doctor.isVerified ? 'Available' : 'Not Available'} {/* Use boolean isVerified directly */}
                       </h3>
                     </div>
                     {/* Card content */}
@@ -109,7 +111,7 @@ export default function DoctorSearch() {
                         {doctor.firstName} {doctor.lastName}
                       </h3>
                       <p className="text-teal-600 font-medium mb-2">{doctor.specialty}</p>
-                      <p className="text-gray-600 text-sm mb-4">4 years of experience</p>
+                      <p className="text-gray-600 text-sm mb-4">{doctor.experience} years of experience</p>
                     </div>
                   </div>
                 ))}
