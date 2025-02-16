@@ -5,11 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Upload, FileText } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
-import { Inter } from 'next/font/google';
 import { Cloudinary } from 'cloudinary-core';
 import { useRouter } from 'next/navigation';
-
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 const doctorSpecialties = [
   "Allergist", "Anesthesiologist", "Cardiologist", "Dermatologist", "Endocrinologist", 
@@ -116,7 +113,7 @@ export default function Form() {
 
   return (
     <motion.div 
-      className={`min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50 p-6 ${inter.className}`}
+      className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50 p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageContainer from "./components/PageContainer";
 import {
   AreaChart,
@@ -18,29 +18,111 @@ import {
   FiDollarSign,
 } from "react-icons/fi";
 
+interface VisitStats {
+  total: number;
+  newPatients: { count: number; growth: number };
+  oldPatients: { count: number; growth: number };
+  revenue: number;
+}
+
+interface ChartData {
+  name: string;
+  visits: number;
+}
+
+interface Appointment {
+  id: number;
+  patient: string;
+  time: string;
+  type: string;
+}
+
 const DoctorDashboard = () => {
-  const [visitStats] = useState({
-    total: 104,
-    newPatients: { count: 40, growth: 51 },
-    oldPatients: { count: 64, growth: -20 },
-    revenue: 15600,
-  });
+  const [visitStats, setVisitStats] = useState<VisitStats | null>(null);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<
+    Appointment[]
+  >([]);
+  const [loading, setLoading] = useState(true);
 
-  const chartData = [
-    { name: "Mon", visits: 20 },
-    { name: "Tue", visits: 35 },
-    { name: "Wed", visits: 25 },
-    { name: "Thu", visits: 40 },
-    { name: "Fri", visits: 30 },
-    { name: "Sat", visits: 15 },
-    { name: "Sun", visits: 10 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  const upcomingAppointments = [
-    { id: 1, patient: "Sarah Johnson", time: "10:00 AM", type: "Checkup" },
-    { id: 2, patient: "Mike Smith", time: "11:30 AM", type: "Follow-up" },
-    { id: 3, patient: "Emma Davis", time: "2:00 PM", type: "Consultation" },
-  ];
+        // Fetch visit stats
+        const statsResponse = await fetch("/api/doctor/dashboard/stats", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const statsData = await statsResponse.json();
+        setVisitStats(statsData);
+
+        // Fetch chart data
+        const chartResponse = await fetch("/api/doctor/dashboard/visits", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!chartResponse.ok) {
+          throw new Error("Failed to fetch chart data");
+        }
+
+        const chartData = await chartResponse.json();
+
+        // Ensure data is in correct format for the chart
+        const formattedChartData = chartData.map((item: any) => ({
+          name: item.name,
+          visits: Number(item.visits) || 0,
+        }));
+
+        // Sort data by day of the week
+        const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        formattedChartData.sort(
+          (a: any, b: any) =>
+            daysOrder.indexOf(a.name) - daysOrder.indexOf(b.name)
+        );
+
+        setChartData(formattedChartData);
+
+        // Fetch appointments
+        const appointmentsResponse = await fetch(
+          "/api/doctor/dashboard/appointments",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const appointmentsData = await appointmentsResponse.json();
+        setUpcomingAppointments(appointmentsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <PageContainer title="Dashboard">
+        <div>Loading...</div>
+      </PageContainer>
+    );
+  }
+
+  if (!visitStats) {
+    return (
+      <PageContainer title="Dashboard">
+        <div>Error loading data</div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer title="Dashboard">
@@ -78,21 +160,45 @@ const DoctorDashboard = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Weekly Visits Overview</h3>
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="visits"
-                  stroke="#007E85"
-                  fill="#007E85"
-                  fillOpacity={0.2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "#6B7280" }}
+                    axisLine={{ stroke: "#D1D5DB" }}
+                  />
+                  <YAxis
+                    tick={{ fill: "#6B7280" }}
+                    axisLine={{ stroke: "#D1D5DB" }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #E5E7EB",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="visits"
+                    stroke="#007E85"
+                    fill="#007E85"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">No data available</p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -10,7 +10,8 @@ const nextConfig: NextConfig = {
       'assets.example.com', 
       'images.pexels.com',
     ],
-  },
+  }, 
+    optimizeFonts: false,
 };
 
 export default nextConfig;
