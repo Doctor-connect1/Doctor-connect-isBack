@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { MessageCircle } from 'lucide-react';
 
 export default function Navbar() {
   const [role, setRole] = useState(""); // State to store the role
@@ -27,6 +28,13 @@ export default function Navbar() {
             height={100}
           />
           <span className="text-xl font-semibold">Healthcare</span>
+          <Link 
+            href="/chat"
+            className="ml-4 p-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-full transition-colors"
+            title="Chat Room"
+          >
+            <MessageCircle size={24} />
+          </Link>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -76,7 +84,23 @@ export default function Navbar() {
 
         {/* Conditionally render different sections based on role */}
         <div className="flex items-center gap-4">
-          {role === null ? ( // If no role is set (not logged in)
+          {role === "Doctor" ? (
+            <Link
+              href="/dashboard"
+              className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
+            >
+              <span className="relative z-10">Work</span>
+              <span className="absolute inset-0 w-0 h-full bg-teal-50 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+          ) : role === "Patient" ? (
+            <Link
+              href="/dashboard"
+              className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
+            >
+              <span className="relative z-10">Find Doctor</span>
+              <span className="absolute inset-0 w-0 h-full bg-teal-50 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+          ) : (
             <>
               <Link
                 href="/firstsign"
@@ -93,23 +117,7 @@ export default function Navbar() {
                 <span className="absolute inset-0 w-0 h-full bg-teal-700 transition-all duration-300 group-hover:w-full"></span>
               </Link>
             </>
-          ) : role === "Doctor" ? ( // If role is doctor
-            <Link
-              href="/dashboard"
-              className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
-            >
-              <span className="relative z-10">Work</span>
-              <span className="absolute inset-0 w-0 h-full bg-teal-50 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ) : role === "Patient" ? ( // If role is patient
-            <Link
-              href="/dashboard"
-              className="relative px-6 py-2 font-medium text-teal-600 rounded-lg group overflow-hidden"
-            >
-              <span className="relative z-10">Find Doctor</span>
-              <span className="absolute inset-0 w-0 h-full bg-teal-50 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ) : null}
+          )}
         </div>
       </div>
     </nav>
