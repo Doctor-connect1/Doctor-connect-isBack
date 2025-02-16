@@ -1,24 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageContainer from "../components/PageContainer";
-import { FiSearch, FiFilter, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiSearch, FiFilter, FiTrash2 } from "react-icons/fi";
 
 const PatientsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [patients] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      age: 45,
-      email: "john@example.com",
-      phone: "+1 234 567 890",
-      lastVisit: "2024-03-15",
-      nextAppointment: "2024-03-25",
-      status: "Active",
-    },
-    // Add more fake patients
-  ]);
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Fix: Add type for patient
+  interface Patient {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    lastVisit: string;
+  }
+
+  // Fetch patients from API
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/doctor/patients/get-them", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch patients");
+        const data = await response.json();
+        setPatients(data as Patient[]); // Add type assertion
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+  }, []);
+
+  // Filtered patients based on search term
+  const filteredPatients = patients.filter((patient: Patient) => {
+    const fullName = `${patient.firstName} ${patient.lastName}`.toLowerCase();
+    const email = patient.email.toLowerCase();
+    return (
+      fullName.includes(searchTerm.toLowerCase()) ||
+      email.includes(searchTerm.toLowerCase())
+    );
+  });
+
+  // Handle appointment deletion with confirmation
+  const handleDelete = async (patientId: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this patient's appointment?"
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingId(patientId);
+      const token = localStorage.getItem("token");
+
+      // First, find the appointment ID for this patient
+      const patient = patients.find((p) => p.id === patientId);
+      if (!patient) throw new Error("Patient not found");
+
+      const response = await fetch(`/api/doctor/patients/${patientId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete appointment");
+
+      // Remove patient from local state
+      setPatients((prev) => prev.filter((p) => p.id !== patientId));
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      alert("Failed to delete appointment");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (loading) {
+    return <PageContainer title="Patients">Loading...</PageContainer>;
+  }
 
   return (
     <PageContainer title="Patients">
@@ -66,23 +139,20 @@ const PatientsPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {patients.map((patient) => (
+              {filteredPatients.map((patient) => (
                 <tr key={patient.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-[#007E85]/10 flex items-center justify-center">
                           <span className="text-[#007E85] font-medium">
-                            {patient.name.charAt(0)}
+                            {patient.firstName.charAt(0)}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-[#1F2937]">
-                          {patient.name}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {patient.age} years old
+                          {patient.firstName} {patient.lastName}
                         </div>
                       </div>
                     </div>
@@ -93,24 +163,26 @@ const PatientsPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-800">
-                      {patient.lastVisit}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Next: {patient.nextAppointment}
+                      {new Date(patient.lastVisit).toLocaleDateString()}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      {patient.status}
+                      Active
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-3">
-                      <button className="text-[#007E85] hover:text-[#007E85]/80">
-                        <FiEdit2 />
-                      </button>
-                      <button className="text-red-500 hover:text-red-600">
-                        <FiTrash2 />
+                      <button
+                        onClick={() => handleDelete(patient.id)}
+                        className="text-red-500 hover:text-red-600"
+                        disabled={deletingId === patient.id}
+                      >
+                        {deletingId === patient.id ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500"></div>
+                        ) : (
+                          <FiTrash2 />
+                        )}
                       </button>
                     </div>
                   </td>
